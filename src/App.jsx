@@ -9,28 +9,48 @@ import * as THREE from "three";
    🔧 GLOBAL TUNING CONTROLS (EDIT THESE)
    ============================================================ */
 
+// Distance from center to each outer sphere
 const RING_RADIUS = 200;
+
+// Base radius of outer spheres
 const SPHERE_RADIUS = 9.2;
+
+// Number of particles per outer sphere
 const SPHERE_PARTICLES = 2600;
+
+// Vertical distance of text above outer spheres
 const LABEL_HEIGHT = 12.0;
 
+// Center "About Me" sphere size
 const CENTER_RADIUS = 10.0;
+
+// Center sphere particle density
 const CENTER_PARTICLES = 3400;
+
+// Center label height
 const CENTER_LABEL_HEIGHT = 14.0;
 
+// Background stars
 const STAR_COUNT = 6000;
 
 /* ============================================================
    🏷️ LABEL / TEXT BILLBOARD TUNING (EDIT THESE)
    ============================================================ */
 
+// Outer label font size
 const LABEL_FONT_SIZE = 1.25;
+
+// Center label font size
 const CENTER_LABEL_FONT_SIZE = 0.95;
+
+// Maximum line width before wrapping (bigger = fewer wraps)
 const LABEL_MAX_WIDTH = 28;
 
-const LABEL_OUTLINE_WIDTH = 0.02;
+// Optional: add an outline to improve readability
+const LABEL_OUTLINE_WIDTH = 0.02; // 0 disables outline
 const LABEL_OUTLINE_OPACITY = 0.75;
 
+// Billboard axis locks (set lockX=true if you want no “tilting”)
 const BILLBOARD_LOCK_X = false;
 const BILLBOARD_LOCK_Y = false;
 const BILLBOARD_LOCK_Z = false;
@@ -42,21 +62,69 @@ const BILLBOARD_LOCK_Z = false;
 const BLOOM_INTENSITY = 0.4;
 const BLOOM_THRESHOLD = 0.75;
 const BLOOM_SMOOTHING = 0.1;
+
+// Multiplies sphere particle colors (lower = dimmer)
 const PARTICLE_BRIGHTNESS = 0.8;
 
 /* ============================================================
    🎥 CAMERA FOCUS CONTROLS (EDIT THESE)
    ============================================================ */
 
+// Distance camera sits from selected sphere
 const FOCUS_DISTANCE = 55;
+
+// How quickly camera moves toward focus position
 const FOCUS_LERP_SPEED = 0.08;
+
+// How quickly OrbitControls target moves toward selected sphere
 const TARGET_LERP_SPEED = 0.12;
+
+// How quickly camera returns to default when you clear selection
 const RETURN_LERP_SPEED = 0.08;
 
 const DISABLE_AUTOROTATE_ON_FOCUS = true;
 
 const DEFAULT_CAMERA_POS = new THREE.Vector3(0, 0, 72);
 const DEFAULT_TARGET = new THREE.Vector3(0, 0, 0);
+
+/* ============================================================
+   ☄️ SHOOTING STARS (EDIT THESE)
+   ============================================================ */
+
+// How many can exist at once (pool size)
+const SHOOTING_STAR_POOL = 10;
+
+// Chance per second to spawn (0.35 ≈ one every ~2–4 sec)
+const SHOOTING_STAR_SPAWN_RATE = 0.35;
+
+// Speed range
+const SHOOTING_STAR_SPEED_MIN = 260;
+const SHOOTING_STAR_SPEED_MAX = 420;
+
+// Trail length (world units)
+const SHOOTING_STAR_TRAIL_LENGTH = 55;
+
+// How long each star lives before recycling (seconds)
+const SHOOTING_STAR_LIFETIME = 1.0;
+
+// Spawn volume (box)
+const SHOOTING_STAR_SPAWN_BOX = {
+  x: 500,
+  y: 220,
+  z: 500,
+};
+
+// Direction of travel
+const SHOOTING_STAR_DIRECTION = new THREE.Vector3(1, -0.35, 0.2).normalize();
+
+// Color (can be "#FFFFFF" or e.g. "#A78BFA")
+const SHOOTING_STAR_COLOR = "#FFFFFF";
+
+// Head size (in pixels)
+const SHOOTING_STAR_HEAD_SIZE = 14;
+
+// Trail opacity
+const SHOOTING_STAR_TRAIL_OPACITY = 0.85;
 
 /* ============================================================
    STAR COLORS (background only)
@@ -91,6 +159,7 @@ function createStarTexture() {
 
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 64, 64);
+
   return new THREE.CanvasTexture(canvas);
 }
 
@@ -174,7 +243,199 @@ function BreathingStarfield({ count }) {
 }
 
 /* ============================================================
+   ☄️ SHOOTING STARS
+   ============================================================ */
+
+function ShootingStars() {
+  const headRefs = useRef([]);
+  const trailRefs = useRef([]);
+
+  const headTex = useMemo(() => createStarTexture(), []);
+  const headColor = useMemo(() => new THREE.Color(SHOOTING_STAR_COLOR), []);
+  const trailColor = useMemo(() => new THREE.Color(SHOOTING_STAR_COLOR), []);
+
+  // Pool of stars (no runtime allocations)
+  const stars = useMemo(() => {
+    return Array.from({ length: SHOOTING_STAR_POOL }, () => ({
+      active: false,
+      age: 0,
+      speed: 0,
+      pos: new THREE.Vector3(),
+      vel: new THREE.Vector3(),
+      tail: new THREE.Vector3(),
+      // 2-point trail line positions
+      trailPositions: new Float32Array(6),
+    }));
+  }, []);
+
+  const spawnOne = useCallback(() => {
+    const s = stars.find((st) => !st.active);
+    if (!s) return;
+
+    s.active = true;
+    s.age = 0;
+
+    s.speed =
+      SHOOTING_STAR_SPEED_MIN +
+      Math.random() * (SHOOTING_STAR_SPEED_MAX - SHOOTING_STAR_SPEED_MIN);
+
+    // Spawn in a box volume (biased upward so they cross the scene)
+    s.pos.set(
+      (Math.random() - 0.5) * SHOOTING_STAR_SPAWN_BOX.x,
+      (Math.random() - 0.5) * SHOOTING_STAR_SPAWN_BOX.y + 140,
+      (Math.random() - 0.5) * SHOOTING_STAR_SPAWN_BOX.z,
+    );
+
+    // Add slight random jitter to direction so they don't look identical
+    const jitter = new THREE.Vector3(
+      (Math.random() - 0.5) * 0.25,
+      (Math.random() - 0.5) * 0.15,
+      (Math.random() - 0.5) * 0.25,
+    );
+
+    s.vel
+      .copy(SHOOTING_STAR_DIRECTION)
+      .add(jitter)
+      .normalize()
+      .multiplyScalar(s.speed);
+
+    // Initial tail behind head
+    s.tail
+      .copy(s.pos)
+      .addScaledVector(s.vel, -(SHOOTING_STAR_TRAIL_LENGTH / s.speed));
+
+    // Prime trail buffer (head -> tail)
+    s.trailPositions[0] = 0;
+    s.trailPositions[1] = 0;
+    s.trailPositions[2] = 0;
+
+    s.trailPositions[3] = s.tail.x - s.pos.x;
+    s.trailPositions[4] = s.tail.y - s.pos.y;
+    s.trailPositions[5] = s.tail.z - s.pos.z;
+  }, [stars]);
+
+  useFrame((state, delta) => {
+    // Probabilistic spawn
+    const chance = SHOOTING_STAR_SPAWN_RATE * delta;
+    if (Math.random() < chance) spawnOne();
+
+    for (let i = 0; i < stars.length; i++) {
+      const s = stars[i];
+      const head = headRefs.current[i];
+      const trail = trailRefs.current[i];
+
+      if (!head || !trail) continue;
+
+      if (!s.active) {
+        head.visible = false;
+        trail.visible = false;
+        continue;
+      }
+
+      s.age += delta;
+
+      // Move head forward
+      s.pos.addScaledVector(s.vel, delta);
+
+      // Tail stays behind head
+      s.tail
+        .copy(s.pos)
+        .addScaledVector(s.vel, -(SHOOTING_STAR_TRAIL_LENGTH / s.speed));
+
+      // Update head group position
+      head.visible = true;
+      head.position.copy(s.pos);
+
+      // Update trail line (in local space of head group)
+      // We'll place trail line under the head group, so positions are relative to head
+      const dx = s.tail.x - s.pos.x;
+      const dy = s.tail.y - s.pos.y;
+      const dz = s.tail.z - s.pos.z;
+
+      s.trailPositions[0] = 0;
+      s.trailPositions[1] = 0;
+      s.trailPositions[2] = 0;
+
+      s.trailPositions[3] = dx;
+      s.trailPositions[4] = dy;
+      s.trailPositions[5] = dz;
+
+      const attr = trail.geometry.attributes.position;
+      attr.array.set(s.trailPositions);
+      attr.needsUpdate = true;
+
+      trail.visible = true;
+
+      // End life
+      if (s.age > SHOOTING_STAR_LIFETIME) {
+        s.active = false;
+        head.visible = false;
+        trail.visible = false;
+      }
+    }
+  });
+
+  return (
+    <group>
+      {stars.map((_, i) => (
+        <group
+          // This group becomes the "head" anchor; we move it each frame
+          key={i}
+          ref={(el) => (headRefs.current[i] = el)}
+          visible={false}
+        >
+          {/* Trail line (local to head) */}
+          <line
+            ref={(el) => (trailRefs.current[i] = el)}
+            visible={false}
+            geometry={useMemo(() => {
+              const g = new THREE.BufferGeometry();
+              g.setAttribute(
+                "position",
+                new THREE.BufferAttribute(new Float32Array(6), 3),
+              );
+              return g;
+            }, [])}
+          >
+            <lineBasicMaterial
+              color={trailColor}
+              transparent
+              opacity={SHOOTING_STAR_TRAIL_OPACITY}
+              blending={THREE.AdditiveBlending}
+              depthWrite={false}
+            />
+          </line>
+
+          {/* Head glow */}
+          <points>
+            <bufferGeometry>
+              <bufferAttribute
+                attach="attributes-position"
+                array={new Float32Array([0, 0, 0])}
+                count={1}
+                itemSize={3}
+              />
+            </bufferGeometry>
+            <pointsMaterial
+              map={headTex}
+              color={headColor}
+              size={SHOOTING_STAR_HEAD_SIZE}
+              sizeAttenuation
+              transparent
+              opacity={0.95}
+              blending={THREE.AdditiveBlending}
+              depthWrite={false}
+            />
+          </points>
+        </group>
+      ))}
+    </group>
+  );
+}
+
+/* ============================================================
    PARTICLE SPHERE (clickable)
+   Label is wrapped in <Billboard> so it always faces the camera.
    ============================================================ */
 
 function ParticleSphere({
@@ -308,7 +569,7 @@ function ParticleSphere({
 }
 
 /* ============================================================
-   CAMERA CONTROLLER (FIXED: doesn't fight OrbitControls on load)
+   CAMERA CONTROLLER (doesn't fight OrbitControls on load)
    ============================================================ */
 
 function CameraRig({ focusPoint, mode, setMode, controlsRef }) {
@@ -318,7 +579,7 @@ function CameraRig({ focusPoint, mode, setMode, controlsRef }) {
   const desiredCamPos = useMemo(() => new THREE.Vector3(), []);
   const dir = useMemo(() => new THREE.Vector3(), []);
 
-  // ✅ Initialize once so first frame doesn't "snap back"
+  // Initialize once so first frame doesn't "snap back"
   useEffect(() => {
     camera.position.copy(DEFAULT_CAMERA_POS);
   }, [camera]);
@@ -327,9 +588,7 @@ function CameraRig({ focusPoint, mode, setMode, controlsRef }) {
     const controls = controlsRef.current;
     if (!controls) return;
 
-    // ------------------------------------------------------------
     // Focused: lock target to sphere; animate camera in if focusing
-    // ------------------------------------------------------------
     if (focusPoint) {
       desiredTarget.set(focusPoint[0], focusPoint[1], focusPoint[2]);
       controls.target.lerp(desiredTarget, TARGET_LERP_SPEED);
@@ -339,22 +598,17 @@ function CameraRig({ focusPoint, mode, setMode, controlsRef }) {
         desiredCamPos
           .copy(controls.target)
           .add(dir.multiplyScalar(FOCUS_DISTANCE));
-
         camera.position.lerp(desiredCamPos, FOCUS_LERP_SPEED);
 
-        if (camera.position.distanceTo(desiredCamPos) < 0.5) {
-          setMode("locked");
-        }
+        if (camera.position.distanceTo(desiredCamPos) < 0.5) setMode("locked");
       }
 
       controls.update();
       return;
     }
 
-    // ------------------------------------------------------------
     // Not focused:
     // ONLY return to default if user requested it (mode=returning)
-    // ------------------------------------------------------------
     if (mode === "returning") {
       controls.target.lerp(DEFAULT_TARGET, RETURN_LERP_SPEED);
       camera.position.lerp(DEFAULT_CAMERA_POS, RETURN_LERP_SPEED);
@@ -371,7 +625,7 @@ function CameraRig({ focusPoint, mode, setMode, controlsRef }) {
     }
 
     // mode === "idle" and no focusPoint:
-    // ✅ Leave OrbitControls alone (free zoom/drag)
+    // Leave OrbitControls alone (free zoom/drag)
   });
 
   return null;
@@ -406,17 +660,20 @@ function Scene() {
     setMode("focusing");
   }, []);
 
-  // ✅ When clearing selection, request a smooth return
   const onClearSelection = useCallback(() => {
     setFocusPoint(null);
-    setMode("returning"); // <- important fix
+    setMode("returning");
     document.body.style.cursor = "default";
   }, []);
 
   return (
     <>
       <ambientLight intensity={0.08} />
+
       <BreathingStarfield count={STAR_COUNT} />
+
+      {/* ☄️ Shooting stars */}
+      <ShootingStars />
 
       {/* Click empty space to reset camera */}
       <mesh onPointerDown={onClearSelection} visible={false}>
@@ -424,6 +681,7 @@ function Scene() {
         <meshBasicMaterial transparent opacity={0} />
       </mesh>
 
+      {/* Outer ring */}
       {items.map((item, i) => {
         const a = (i / items.length) * Math.PI * 2;
         return (
@@ -441,6 +699,7 @@ function Scene() {
         );
       })}
 
+      {/* Center sphere */}
       <ParticleSphere
         position={[0, 0, 0]}
         label="About Me"
