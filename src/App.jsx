@@ -9,48 +9,28 @@ import * as THREE from "three";
    🔧 GLOBAL TUNING CONTROLS (EDIT THESE)
    ============================================================ */
 
-// Distance from center to each outer sphere
 const RING_RADIUS = 200;
-
-// Base radius of outer spheres
 const SPHERE_RADIUS = 9.2;
-
-// Number of particles per outer sphere
 const SPHERE_PARTICLES = 2600;
-
-// Vertical distance of text above outer spheres
 const LABEL_HEIGHT = 12.0;
 
-// Center "About Me" sphere size
 const CENTER_RADIUS = 10.0;
-
-// Center sphere particle density
 const CENTER_PARTICLES = 3400;
-
-// Center label height
 const CENTER_LABEL_HEIGHT = 14.0;
 
-// Background stars
 const STAR_COUNT = 6000;
 
 /* ============================================================
    🏷️ LABEL / TEXT BILLBOARD TUNING (EDIT THESE)
    ============================================================ */
 
-// Outer label font size
 const LABEL_FONT_SIZE = 1.25;
-
-// Center label font size
 const CENTER_LABEL_FONT_SIZE = 0.95;
-
-// Maximum line width before wrapping (bigger = fewer wraps)
 const LABEL_MAX_WIDTH = 28;
 
-// Optional: add an outline to improve readability
 const LABEL_OUTLINE_WIDTH = 0.02; // 0 disables outline
 const LABEL_OUTLINE_OPACITY = 0.75;
 
-// Billboard axis locks (set lockX=true if you want no “tilting”)
 const BILLBOARD_LOCK_X = false;
 const BILLBOARD_LOCK_Y = false;
 const BILLBOARD_LOCK_Z = false;
@@ -70,16 +50,9 @@ const PARTICLE_BRIGHTNESS = 0.8;
    🎥 CAMERA FOCUS CONTROLS (EDIT THESE)
    ============================================================ */
 
-// Distance camera sits from selected sphere
 const FOCUS_DISTANCE = 55;
-
-// How quickly camera moves toward focus position
 const FOCUS_LERP_SPEED = 0.08;
-
-// How quickly OrbitControls target moves toward selected sphere
 const TARGET_LERP_SPEED = 0.12;
-
-// How quickly camera returns to default when you clear selection
 const RETURN_LERP_SPEED = 0.08;
 
 const DISABLE_AUTOROTATE_ON_FOCUS = true;
@@ -88,43 +61,53 @@ const DEFAULT_CAMERA_POS = new THREE.Vector3(0, 0, 72);
 const DEFAULT_TARGET = new THREE.Vector3(0, 0, 0);
 
 /* ============================================================
-   ☄️ SHOOTING STARS (EDIT THESE)
+   ☄️ SHOOTING STARS (simple version)
    ============================================================ */
 
-// How many can exist at once (pool size)
 const SHOOTING_STAR_POOL = 10;
-
-// Chance per second to spawn (0.35 ≈ one every ~2–4 sec)
 const SHOOTING_STAR_SPAWN_RATE = 0.35;
-
-// Speed range
 const SHOOTING_STAR_SPEED_MIN = 260;
 const SHOOTING_STAR_SPEED_MAX = 420;
-
-// Trail length (world units)
 const SHOOTING_STAR_TRAIL_LENGTH = 55;
-
-// How long each star lives before recycling (seconds)
 const SHOOTING_STAR_LIFETIME = 1.0;
-
-// Spawn volume (box)
-const SHOOTING_STAR_SPAWN_BOX = {
-  x: 500,
-  y: 220,
-  z: 500,
-};
-
-// Direction of travel
+const SHOOTING_STAR_SPAWN_BOX = { x: 500, y: 220, z: 500 };
 const SHOOTING_STAR_DIRECTION = new THREE.Vector3(1, -0.35, 0.2).normalize();
-
-// Color (can be "#FFFFFF" or e.g. "#A78BFA")
 const SHOOTING_STAR_COLOR = "#FFFFFF";
-
-// Head size (in pixels)
 const SHOOTING_STAR_HEAD_SIZE = 14;
-
-// Trail opacity
 const SHOOTING_STAR_TRAIL_OPACITY = 0.85;
+
+/* ============================================================
+   🌌 SPIRAL GALAXY (EDIT THESE)
+   ============================================================ */
+
+// Y position of the galaxy (below spheres)
+const GALAXY_Y = -90;
+
+// Overall radius of the galaxy disk
+const GALAXY_RADIUS = 220;
+
+// Number of particles in the galaxy
+const GALAXY_COUNT = 14000;
+
+// Spiral arms count
+const GALAXY_ARMS = 4;
+
+// How tightly the arms wind
+const GALAXY_SPIN = 2.4;
+
+// Randomness / dust amount
+const GALAXY_RANDOMNESS = 0.42;
+
+// Vertical thickness
+const GALAXY_THICKNESS = 10;
+
+// Overall brightness
+const GALAXY_BRIGHTNESS = 0.55;
+
+// Colors (core -> arms -> dust)
+const GALAXY_CORE_COLOR = "#FFFFFF";
+const GALAXY_ARM_COLOR = "#A78BFA";
+const GALAXY_DUST_COLOR = "#22D3EE";
 
 /* ============================================================
    STAR COLORS (background only)
@@ -159,7 +142,6 @@ function createStarTexture() {
 
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 64, 64);
-
   return new THREE.CanvasTexture(canvas);
 }
 
@@ -243,6 +225,128 @@ function BreathingStarfield({ count }) {
 }
 
 /* ============================================================
+   🌌 SPIRAL GALAXY (disk under spheres)
+   ============================================================ */
+
+function SpiralGalaxy() {
+  const ref = useRef();
+  const matRef = useRef();
+  const tex = useMemo(() => createStarTexture(), []);
+
+  const core = useMemo(() => new THREE.Color(GALAXY_CORE_COLOR), []);
+  const arm = useMemo(() => new THREE.Color(GALAXY_ARM_COLOR), []);
+  const dust = useMemo(() => new THREE.Color(GALAXY_DUST_COLOR), []);
+
+  const { geometry, material } = useMemo(() => {
+    const positions = new Float32Array(GALAXY_COUNT * 3);
+    const colors = new Float32Array(GALAXY_COUNT * 3);
+    const sizes = new Float32Array(GALAXY_COUNT);
+    const phases = new Float32Array(GALAXY_COUNT);
+
+    for (let i = 0; i < GALAXY_COUNT; i++) {
+      // More density near center
+      const r = Math.pow(Math.random(), 1.9) * GALAXY_RADIUS;
+
+      // Choose spiral arm
+      const armIndex = i % GALAXY_ARMS;
+      const armAngle = (armIndex / GALAXY_ARMS) * Math.PI * 2;
+
+      // Finally spiral angle based on radius
+      const angle = armAngle + (r / GALAXY_RADIUS) * Math.PI * 2 * GALAXY_SPIN;
+
+      // Random offsets for "dust"
+      const rand = (Math.random() - 0.5) * 2;
+      const randomRadius =
+        rand * GALAXY_RANDOMNESS * (GALAXY_RADIUS - r) * 0.15;
+      const randomAngle = rand * GALAXY_RANDOMNESS * 0.35;
+
+      const finalR = r + randomRadius;
+      const finalA = angle + randomAngle;
+
+      const x = Math.cos(finalA) * finalR;
+      const z = Math.sin(finalA) * finalR;
+
+      // Disk thickness (thicker near core)
+      const thickness = GALAXY_THICKNESS * (1.0 - r / GALAXY_RADIUS);
+      const y = (Math.random() - 0.5) * thickness;
+
+      positions[i * 3] = x;
+      positions[i * 3 + 1] = y;
+      positions[i * 3 + 2] = z;
+
+      // Color gradient: core white -> arms purple -> a bit of cyan dust
+      const t = 1.0 - r / GALAXY_RADIUS;
+      const dustMix = Math.random() * 0.25;
+
+      const col = new THREE.Color().copy(arm).lerp(core, t).lerp(dust, dustMix);
+
+      colors[i * 3] = col.r * GALAXY_BRIGHTNESS;
+      colors[i * 3 + 1] = col.g * GALAXY_BRIGHTNESS;
+      colors[i * 3 + 2] = col.b * GALAXY_BRIGHTNESS;
+
+      // Size: larger in core
+      const sizeBase = 1.0 + 2.2 * t;
+      sizes[i] = sizeBase * (0.6 + Math.random() * 1.2);
+
+      phases[i] = Math.random();
+    }
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    geo.setAttribute("aColor", new THREE.BufferAttribute(colors, 3));
+    geo.setAttribute("aSize", new THREE.BufferAttribute(sizes, 1));
+    geo.setAttribute("aPhase", new THREE.BufferAttribute(phases, 1));
+
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { uTime: { value: 0 }, uTexture: { value: tex } },
+      vertexShader: `
+        attribute float aSize, aPhase;
+        attribute vec3 aColor;
+        uniform float uTime;
+        varying vec3 vColor;
+        void main() {
+          vColor = aColor;
+          vec4 mv = modelViewMatrix * vec4(position, 1.0);
+
+          float shimmer = sin(uTime * 0.5 + aPhase * 6.283) * 0.12 + 1.0;
+
+          gl_PointSize = aSize * shimmer * (250.0 / -mv.z);
+          gl_Position = projectionMatrix * mv;
+        }
+      `,
+      fragmentShader: `
+        uniform sampler2D uTexture;
+        varying vec3 vColor;
+        void main() {
+          vec4 t = texture2D(uTexture, gl_PointCoord);
+          gl_FragColor = vec4(vColor * t.rgb, t.a);
+        }
+      `,
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+
+    matRef.current = mat;
+    return { geometry: geo, material: mat };
+  }, [tex, core, arm, dust]);
+
+  useFrame(({ clock }) => {
+    if (!ref.current || !matRef.current) return;
+    matRef.current.uniforms.uTime.value = clock.elapsedTime;
+
+    // Slow subtle rotation
+    ref.current.rotation.y = clock.elapsedTime * 0.03;
+  });
+
+  return (
+    <group position={[0, GALAXY_Y, 0]}>
+      <points ref={ref} geometry={geometry} material={material} />
+    </group>
+  );
+}
+
+/* ============================================================
    ☄️ SHOOTING STARS
    ============================================================ */
 
@@ -251,10 +355,8 @@ function ShootingStars() {
   const trailRefs = useRef([]);
 
   const headTex = useMemo(() => createStarTexture(), []);
-  const headColor = useMemo(() => new THREE.Color(SHOOTING_STAR_COLOR), []);
-  const trailColor = useMemo(() => new THREE.Color(SHOOTING_STAR_COLOR), []);
+  const color = useMemo(() => new THREE.Color(SHOOTING_STAR_COLOR), []);
 
-  // Pool of stars (no runtime allocations)
   const stars = useMemo(() => {
     return Array.from({ length: SHOOTING_STAR_POOL }, () => ({
       active: false,
@@ -263,7 +365,6 @@ function ShootingStars() {
       pos: new THREE.Vector3(),
       vel: new THREE.Vector3(),
       tail: new THREE.Vector3(),
-      // 2-point trail line positions
       trailPositions: new Float32Array(6),
     }));
   }, []);
@@ -274,19 +375,16 @@ function ShootingStars() {
 
     s.active = true;
     s.age = 0;
-
     s.speed =
       SHOOTING_STAR_SPEED_MIN +
       Math.random() * (SHOOTING_STAR_SPEED_MAX - SHOOTING_STAR_SPEED_MIN);
 
-    // Spawn in a box volume (biased upward so they cross the scene)
     s.pos.set(
       (Math.random() - 0.5) * SHOOTING_STAR_SPAWN_BOX.x,
       (Math.random() - 0.5) * SHOOTING_STAR_SPAWN_BOX.y + 140,
       (Math.random() - 0.5) * SHOOTING_STAR_SPAWN_BOX.z,
     );
 
-    // Add slight random jitter to direction so they don't look identical
     const jitter = new THREE.Vector3(
       (Math.random() - 0.5) * 0.25,
       (Math.random() - 0.5) * 0.15,
@@ -299,12 +397,10 @@ function ShootingStars() {
       .normalize()
       .multiplyScalar(s.speed);
 
-    // Initial tail behind head
     s.tail
       .copy(s.pos)
       .addScaledVector(s.vel, -(SHOOTING_STAR_TRAIL_LENGTH / s.speed));
 
-    // Prime trail buffer (head -> tail)
     s.trailPositions[0] = 0;
     s.trailPositions[1] = 0;
     s.trailPositions[2] = 0;
@@ -315,7 +411,6 @@ function ShootingStars() {
   }, [stars]);
 
   useFrame((state, delta) => {
-    // Probabilistic spawn
     const chance = SHOOTING_STAR_SPAWN_RATE * delta;
     if (Math.random() < chance) spawnOne();
 
@@ -333,21 +428,17 @@ function ShootingStars() {
       }
 
       s.age += delta;
-
-      // Move head forward
       s.pos.addScaledVector(s.vel, delta);
-
-      // Tail stays behind head
       s.tail
         .copy(s.pos)
         .addScaledVector(s.vel, -(SHOOTING_STAR_TRAIL_LENGTH / s.speed));
 
-      // Update head group position
       head.visible = true;
-      head.position.copy(s.pos);
+      trail.visible = true;
 
-      // Update trail line (in local space of head group)
-      // We'll place trail line under the head group, so positions are relative to head
+      head.position.copy(s.pos);
+      trail.position.copy(s.pos);
+
       const dx = s.tail.x - s.pos.x;
       const dy = s.tail.y - s.pos.y;
       const dz = s.tail.z - s.pos.z;
@@ -355,7 +446,6 @@ function ShootingStars() {
       s.trailPositions[0] = 0;
       s.trailPositions[1] = 0;
       s.trailPositions[2] = 0;
-
       s.trailPositions[3] = dx;
       s.trailPositions[4] = dy;
       s.trailPositions[5] = dz;
@@ -364,9 +454,6 @@ function ShootingStars() {
       attr.array.set(s.trailPositions);
       attr.needsUpdate = true;
 
-      trail.visible = true;
-
-      // End life
       if (s.age > SHOOTING_STAR_LIFETIME) {
         s.active = false;
         head.visible = false;
@@ -378,13 +465,7 @@ function ShootingStars() {
   return (
     <group>
       {stars.map((_, i) => (
-        <group
-          // This group becomes the "head" anchor; we move it each frame
-          key={i}
-          ref={(el) => (headRefs.current[i] = el)}
-          visible={false}
-        >
-          {/* Trail line (local to head) */}
+        <group key={i} ref={(el) => (headRefs.current[i] = el)} visible={false}>
           <line
             ref={(el) => (trailRefs.current[i] = el)}
             visible={false}
@@ -398,7 +479,7 @@ function ShootingStars() {
             }, [])}
           >
             <lineBasicMaterial
-              color={trailColor}
+              color={color}
               transparent
               opacity={SHOOTING_STAR_TRAIL_OPACITY}
               blending={THREE.AdditiveBlending}
@@ -406,7 +487,6 @@ function ShootingStars() {
             />
           </line>
 
-          {/* Head glow */}
           <points>
             <bufferGeometry>
               <bufferAttribute
@@ -418,7 +498,7 @@ function ShootingStars() {
             </bufferGeometry>
             <pointsMaterial
               map={headTex}
-              color={headColor}
+              color={color}
               size={SHOOTING_STAR_HEAD_SIZE}
               sizeAttenuation
               transparent
@@ -435,7 +515,6 @@ function ShootingStars() {
 
 /* ============================================================
    PARTICLE SPHERE (clickable)
-   Label is wrapped in <Billboard> so it always faces the camera.
    ============================================================ */
 
 function ParticleSphere({
@@ -569,7 +648,7 @@ function ParticleSphere({
 }
 
 /* ============================================================
-   CAMERA CONTROLLER (doesn't fight OrbitControls on load)
+   CAMERA CONTROLLER (doesn't fight OrbitControls on idle)
    ============================================================ */
 
 function CameraRig({ focusPoint, mode, setMode, controlsRef }) {
@@ -579,7 +658,6 @@ function CameraRig({ focusPoint, mode, setMode, controlsRef }) {
   const desiredCamPos = useMemo(() => new THREE.Vector3(), []);
   const dir = useMemo(() => new THREE.Vector3(), []);
 
-  // Initialize once so first frame doesn't "snap back"
   useEffect(() => {
     camera.position.copy(DEFAULT_CAMERA_POS);
   }, [camera]);
@@ -588,7 +666,6 @@ function CameraRig({ focusPoint, mode, setMode, controlsRef }) {
     const controls = controlsRef.current;
     if (!controls) return;
 
-    // Focused: lock target to sphere; animate camera in if focusing
     if (focusPoint) {
       desiredTarget.set(focusPoint[0], focusPoint[1], focusPoint[2]);
       controls.target.lerp(desiredTarget, TARGET_LERP_SPEED);
@@ -600,15 +677,15 @@ function CameraRig({ focusPoint, mode, setMode, controlsRef }) {
           .add(dir.multiplyScalar(FOCUS_DISTANCE));
         camera.position.lerp(desiredCamPos, FOCUS_LERP_SPEED);
 
-        if (camera.position.distanceTo(desiredCamPos) < 0.5) setMode("locked");
+        if (camera.position.distanceTo(desiredCamPos) < 0.5) {
+          setMode("locked");
+        }
       }
 
       controls.update();
       return;
     }
 
-    // Not focused:
-    // ONLY return to default if user requested it (mode=returning)
     if (mode === "returning") {
       controls.target.lerp(DEFAULT_TARGET, RETURN_LERP_SPEED);
       camera.position.lerp(DEFAULT_CAMERA_POS, RETURN_LERP_SPEED);
@@ -624,8 +701,7 @@ function CameraRig({ focusPoint, mode, setMode, controlsRef }) {
       return;
     }
 
-    // mode === "idle" and no focusPoint:
-    // Leave OrbitControls alone (free zoom/drag)
+    // idle: let OrbitControls work freely
   });
 
   return null;
@@ -672,6 +748,9 @@ function Scene() {
 
       <BreathingStarfield count={STAR_COUNT} />
 
+      {/* 🌌 Spiral galaxy below the spheres */}
+      <SpiralGalaxy />
+
       {/* ☄️ Shooting stars */}
       <ShootingStars />
 
@@ -681,7 +760,7 @@ function Scene() {
         <meshBasicMaterial transparent opacity={0} />
       </mesh>
 
-      {/* Outer ring */}
+      {/* Outer ring of spheres */}
       {items.map((item, i) => {
         const a = (i / items.length) * Math.PI * 2;
         return (
@@ -732,7 +811,7 @@ function Scene() {
 }
 
 /* ============================================================
-   APP (full viewport)
+   APP
    ============================================================ */
 
 export default function App() {
