@@ -1,0 +1,28 @@
+# dependencies
+node_modules/
+
+# production
+dist/
+dist-ssr/
+
+# local env files (DO NOT COMMIT SECRETS)
+.env
+.env.local
+.env.*.local
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Optional: cache (safe to ignore)
+.eslintcache
+*.log
