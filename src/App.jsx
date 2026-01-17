@@ -2,7 +2,7 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Text, Billboard } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
-import { useMemo, useRef, useState, useCallback } from "react";
+import { useMemo, useRef, useState, useCallback, useEffect } from "react";
 import * as THREE from "three";
 
 /* ============================================================
@@ -24,23 +24,13 @@ const STAR_COUNT = 6000;
    🏷️ LABEL / TEXT BILLBOARD TUNING (EDIT THESE)
    ============================================================ */
 
-// Outer label font size
 const LABEL_FONT_SIZE = 1.25;
-
-// Center label font size
 const CENTER_LABEL_FONT_SIZE = 0.95;
-
-// Maximum line width before wrapping (bigger = fewer wraps)
 const LABEL_MAX_WIDTH = 28;
 
-// Optional: add an outline to improve readability
-const LABEL_OUTLINE_WIDTH = 0.02; // 0 disables outline
+const LABEL_OUTLINE_WIDTH = 0.02;
 const LABEL_OUTLINE_OPACITY = 0.75;
 
-// Billboard axis locks:
-// - If true, that axis will NOT rotate.
-// - Often you want lockX=true to prevent “tilting” up/down.
-// Try toggling these to get the feel you want.
 const BILLBOARD_LOCK_X = false;
 const BILLBOARD_LOCK_Y = false;
 const BILLBOARD_LOCK_Z = false;
@@ -185,7 +175,6 @@ function BreathingStarfield({ count }) {
 
 /* ============================================================
    PARTICLE SPHERE (clickable)
-   Label is wrapped in <Billboard> so it always faces the camera.
    ============================================================ */
 
 function ParticleSphere({
@@ -276,10 +265,6 @@ function ParticleSphere({
 
   return (
     <group position={position}>
-      {/* ======================================================
-          🏷️ BILLBOARDED LABEL (always faces camera)
-          If you want it to not "tilt", set BILLBOARD_LOCK_X=true
-         ====================================================== */}
       <Billboard
         follow
         lockX={BILLBOARD_LOCK_X}
@@ -323,7 +308,7 @@ function ParticleSphere({
 }
 
 /* ============================================================
-   CAMERA CONTROLLER
+   CAMERA CONTROLLER (FIXED: doesn't fight OrbitControls on load)
    ============================================================ */
 
 function CameraRig({ focusPoint, mode, setMode, controlsRef }) {
@@ -333,10 +318,18 @@ function CameraRig({ focusPoint, mode, setMode, controlsRef }) {
   const desiredCamPos = useMemo(() => new THREE.Vector3(), []);
   const dir = useMemo(() => new THREE.Vector3(), []);
 
+  // ✅ Initialize once so first frame doesn't "snap back"
+  useEffect(() => {
+    camera.position.copy(DEFAULT_CAMERA_POS);
+  }, [camera]);
+
   useFrame(() => {
     const controls = controlsRef.current;
     if (!controls) return;
 
+    // ------------------------------------------------------------
+    // Focused: lock target to sphere; animate camera in if focusing
+    // ------------------------------------------------------------
     if (focusPoint) {
       desiredTarget.set(focusPoint[0], focusPoint[1], focusPoint[2]);
       controls.target.lerp(desiredTarget, TARGET_LERP_SPEED);
@@ -346,22 +339,39 @@ function CameraRig({ focusPoint, mode, setMode, controlsRef }) {
         desiredCamPos
           .copy(controls.target)
           .add(dir.multiplyScalar(FOCUS_DISTANCE));
+
         camera.position.lerp(desiredCamPos, FOCUS_LERP_SPEED);
 
         if (camera.position.distanceTo(desiredCamPos) < 0.5) {
           setMode("locked");
         }
-        controls.update();
-        return;
       }
 
       controls.update();
       return;
     }
 
-    controls.target.lerp(DEFAULT_TARGET, RETURN_LERP_SPEED);
-    camera.position.lerp(DEFAULT_CAMERA_POS, RETURN_LERP_SPEED);
-    controls.update();
+    // ------------------------------------------------------------
+    // Not focused:
+    // ONLY return to default if user requested it (mode=returning)
+    // ------------------------------------------------------------
+    if (mode === "returning") {
+      controls.target.lerp(DEFAULT_TARGET, RETURN_LERP_SPEED);
+      camera.position.lerp(DEFAULT_CAMERA_POS, RETURN_LERP_SPEED);
+
+      if (
+        camera.position.distanceTo(DEFAULT_CAMERA_POS) < 0.5 &&
+        controls.target.distanceTo(DEFAULT_TARGET) < 0.5
+      ) {
+        setMode("idle");
+      }
+
+      controls.update();
+      return;
+    }
+
+    // mode === "idle" and no focusPoint:
+    // ✅ Leave OrbitControls alone (free zoom/drag)
   });
 
   return null;
@@ -374,7 +384,6 @@ function CameraRig({ focusPoint, mode, setMode, controlsRef }) {
 function Scene() {
   const controlsRef = useRef();
   const [focusPoint, setFocusPoint] = useState(null);
-
   const [mode, setMode] = useState("idle");
 
   const items = [
@@ -397,9 +406,10 @@ function Scene() {
     setMode("focusing");
   }, []);
 
+  // ✅ When clearing selection, request a smooth return
   const onClearSelection = useCallback(() => {
     setFocusPoint(null);
-    setMode("idle");
+    setMode("returning"); // <- important fix
     document.body.style.cursor = "default";
   }, []);
 
@@ -463,13 +473,21 @@ function Scene() {
 }
 
 /* ============================================================
-   APP
+   APP (full viewport)
    ============================================================ */
 
 export default function App() {
   return (
-    <div className="w-full h-screen bg-black">
+    <div
+      style={{
+        width: "100vw",
+        height: "100vh",
+        backgroundColor: "black",
+        overflow: "hidden",
+      }}
+    >
       <Canvas
+        style={{ width: "100%", height: "100%", display: "block" }}
         camera={{ position: [0, 0, 72], fov: 60, near: 0.1, far: 3000 }}
         gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}
       >
