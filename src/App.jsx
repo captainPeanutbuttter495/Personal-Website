@@ -37,7 +37,10 @@ const LABEL_MAX_WIDTH = 28;
 const LABEL_OUTLINE_WIDTH = 0.02; // 0 disables outline
 const LABEL_OUTLINE_OPACITY = 0.75;
 
-// Billboard axis locks
+// Billboard axis locks:
+// - If true, that axis will NOT rotate.
+// - Often you want lockX=true to prevent “tilting” up/down.
+// Try toggling these to get the feel you want.
 const BILLBOARD_LOCK_X = false;
 const BILLBOARD_LOCK_Y = false;
 const BILLBOARD_LOCK_Z = false;
@@ -182,6 +185,7 @@ function BreathingStarfield({ count }) {
 
 /* ============================================================
    PARTICLE SPHERE (clickable)
+   Label is wrapped in <Billboard> so it always faces the camera.
    ============================================================ */
 
 function ParticleSphere({
@@ -272,6 +276,10 @@ function ParticleSphere({
 
   return (
     <group position={position}>
+      {/* ======================================================
+          🏷️ BILLBOARDED LABEL (always faces camera)
+          If you want it to not "tilt", set BILLBOARD_LOCK_X=true
+         ====================================================== */}
       <Billboard
         follow
         lockX={BILLBOARD_LOCK_X}
@@ -366,6 +374,7 @@ function CameraRig({ focusPoint, mode, setMode, controlsRef }) {
 function Scene() {
   const controlsRef = useRef();
   const [focusPoint, setFocusPoint] = useState(null);
+
   const [mode, setMode] = useState("idle");
 
   const items = [
@@ -399,6 +408,7 @@ function Scene() {
       <ambientLight intensity={0.08} />
       <BreathingStarfield count={STAR_COUNT} />
 
+      {/* Click empty space to reset camera */}
       <mesh onPointerDown={onClearSelection} visible={false}>
         <boxGeometry args={[4000, 4000, 4000]} />
         <meshBasicMaterial transparent opacity={0} />
@@ -453,21 +463,13 @@ function Scene() {
 }
 
 /* ============================================================
-   APP (UPDATED: DEPLOY-SAFE FULL VIEWPORT CANVAS)
+   APP
    ============================================================ */
 
 export default function App() {
   return (
-    <div
-      style={{
-        width: "100vw",
-        height: "100vh",
-        backgroundColor: "black",
-        overflow: "hidden",
-      }}
-    >
+    <div className="w-full h-screen bg-black">
       <Canvas
-        style={{ width: "100%", height: "100%" }}
         camera={{ position: [0, 0, 72], fov: 60, near: 0.1, far: 3000 }}
         gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}
       >
