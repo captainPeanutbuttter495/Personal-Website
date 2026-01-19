@@ -1,10 +1,14 @@
+// src/scene/Scene.jsx
 import { OrbitControls } from "@react-three/drei";
 import { useCallback, useRef, useState } from "react";
+
 import Starfield from "../components/Starfield";
-import ShootingStars from "../components/ShootingStars";
-import ParticleSphere from "../components/ParticleSphere";
 import SpiralGalaxy from "../components/SpiralGalaxy";
+import ParticleSphere from "../components/ParticleSphere";
+import ShootingStars from "../components/ShootingStars";
+
 import CameraRig from "./CameraRig";
+
 import {
   ABOUT_ME,
   CENTER_LABEL_FONT_SIZE,
@@ -12,10 +16,10 @@ import {
   CENTER_PARTICLES,
   CENTER_RADIUS,
   CLASS_SPHERES,
+  RING_RADIUS,
   DISABLE_AUTOROTATE_ON_FOCUS,
   LABEL_FONT_SIZE,
   LABEL_HEIGHT,
-  RING_RADIUS,
   SPHERE_PARTICLES,
   SPHERE_RADIUS,
   STAR_COUNT,
@@ -41,21 +45,28 @@ export default function Scene() {
     <>
       <ambientLight intensity={0.08} />
 
+      {/* Background */}
       <Starfield count={STAR_COUNT} />
       <ShootingStars />
       <SpiralGalaxy />
 
+      {/* Click empty space to reset camera */}
       <mesh onPointerDown={onClearSelection} visible={false}>
         <boxGeometry args={[4000, 4000, 4000]} />
         <meshBasicMaterial transparent opacity={0} />
       </mesh>
 
       {CLASS_SPHERES.map((item, i) => {
-        const a = (i / CLASS_SPHERES.length) * Math.PI * 2;
+        const angle = (i / CLASS_SPHERES.length) * Math.PI * 2;
+
         return (
           <ParticleSphere
             key={item.label}
-            position={[Math.cos(a) * RING_RADIUS, 0, Math.sin(a) * RING_RADIUS]}
+            position={[
+              Math.cos(angle) * RING_RADIUS,
+              0,
+              Math.sin(angle) * RING_RADIUS,
+            ]}
             label={item.label}
             color={item.color}
             radius={SPHERE_RADIUS}
@@ -63,10 +74,12 @@ export default function Scene() {
             labelHeight={LABEL_HEIGHT}
             labelFontSize={LABEL_FONT_SIZE}
             onSelect={onSelectSphere}
+            url={item.url}
           />
         );
       })}
 
+      {/* Center sphere */}
       <ParticleSphere
         position={[0, 0, 0]}
         label={ABOUT_ME.label}
@@ -83,7 +96,7 @@ export default function Scene() {
         enableZoom
         enablePan={false}
         minDistance={24}
-        maxDistance={260}
+        maxDistance={300}
         autoRotate={DISABLE_AUTOROTATE_ON_FOCUS ? !focusPoint : true}
         autoRotateSpeed={0.2}
       />
