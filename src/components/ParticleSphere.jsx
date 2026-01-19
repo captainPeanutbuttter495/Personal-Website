@@ -1,8 +1,9 @@
-import { useFrame } from "@react-three/fiber";
+// src/components/ParticleSphere.jsx
 import { Billboard, Text } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
-import { createStarTexture } from "./StarTexture";
+
 import {
   BILLBOARD_LOCK_X,
   BILLBOARD_LOCK_Y,
@@ -13,6 +14,22 @@ import {
   PARTICLE_BRIGHTNESS,
 } from "../config/tuning";
 
+function createStarTexture() {
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = 64;
+  const ctx = canvas.getContext("2d");
+
+  const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  g.addColorStop(0, "rgba(255,255,255,1)");
+  g.addColorStop(0.35, "rgba(255,255,255,0.6)");
+  g.addColorStop(1, "rgba(255,255,255,0)");
+
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 64, 64);
+
+  return new THREE.CanvasTexture(canvas);
+}
+
 export default function ParticleSphere({
   position,
   label,
@@ -22,15 +39,16 @@ export default function ParticleSphere({
   labelHeight,
   labelFontSize,
   onSelect,
+  url, // ✅ optional (Pokemon uses this)
 }) {
   const ref = useRef();
   const matRef = useRef();
   const tex = useMemo(() => createStarTexture(), []);
 
-  const baseColor = useMemo(
-    () => new THREE.Color(color).multiplyScalar(PARTICLE_BRIGHTNESS),
-    [color],
-  );
+  const baseColor = useMemo(() => {
+    // Important: ensure valid hex strings like "#22D3EE"
+    return new THREE.Color(color).multiplyScalar(PARTICLE_BRIGHTNESS);
+  }, [color]);
 
   const { geometry, material } = useMemo(() => {
     const p = new Float32Array(particleCount * 3);
@@ -39,6 +57,7 @@ export default function ParticleSphere({
     const ph = new Float32Array(particleCount);
 
     for (let i = 0; i < particleCount; i++) {
+      // fibonacci sphere distribution
       const y = 1 - (i / (particleCount - 1)) * 2;
       const r = Math.sqrt(1 - y * y);
       const t = i * 2.39996323;
@@ -94,10 +113,11 @@ export default function ParticleSphere({
   }, [particleCount, radius, tex, baseColor]);
 
   useFrame(({ clock }) => {
-    if (!ref.current || !matRef.current) return;
-    matRef.current.uniforms.uTime.value = clock.elapsedTime;
-    ref.current.rotation.y = clock.elapsedTime * 0.09;
-    ref.current.rotation.x = clock.elapsedTime * 0.03;
+    if (matRef.current) matRef.current.uniforms.uTime.value = clock.elapsedTime;
+    if (ref.current) {
+      ref.current.rotation.y = clock.elapsedTime * 0.09;
+      ref.current.rotation.x = clock.elapsedTime * 0.03;
+    }
   });
 
   return (
@@ -132,9 +152,13 @@ export default function ParticleSphere({
           e.stopPropagation();
           onSelect?.(position);
         }}
+        onDoubleClick={(e) => {
+          e.stopPropagation();
+          if (url) window.open(url, "_blank", "noopener,noreferrer");
+        }}
         onPointerOver={(e) => {
           e.stopPropagation();
-          document.body.style.cursor = "pointer";
+          document.body.style.cursor = url ? "pointer" : "pointer";
         }}
         onPointerOut={() => {
           document.body.style.cursor = "default";
