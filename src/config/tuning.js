@@ -2,8 +2,8 @@
 import * as THREE from "three";
 
 /* ============================================================
-    GLOBAL TUNING CONTROLS 
- ============================================================ */
+   🔧 GLOBAL TUNING CONTROLS (EDIT THESE)
+   ============================================================ */
 
 export const RING_RADIUS = 200;
 export const SPHERE_RADIUS = 9.2;
@@ -16,14 +16,8 @@ export const CENTER_LABEL_HEIGHT = 14.0;
 
 export const STAR_COUNT = 6000;
 
-// Increased slightly to prevent the two clusters 
-export const GROUP_GAP = 0.75;
-
-// Rotate the full ring so clusters sit nicely in view
-export const RING_START_ANGLE = -Math.PI / 2;
-
 /* ============================================================
-   ️ LABEL / TEXT BILLBOARD TUNING 
+   🏷️ LABEL / TEXT BILLBOARD TUNING (EDIT THESE)
    ============================================================ */
 
 export const LABEL_FONT_SIZE = 1.25;
@@ -39,7 +33,7 @@ export const BILLBOARD_LOCK_Y = false;
 export const BILLBOARD_LOCK_Z = false;
 
 /* ============================================================
-    DIMMING / BRIGHTNESS CONTROLS 
+   🌑 DIMMING / BRIGHTNESS CONTROLS (EDIT THESE)
    ============================================================ */
 
 export const BLOOM_INTENSITY = 0.4;
@@ -49,7 +43,7 @@ export const BLOOM_SMOOTHING = 0.1;
 export const PARTICLE_BRIGHTNESS = 0.8;
 
 /* ============================================================
-    CAMERA FOCUS CONTROLS 
+   🎥 CAMERA FOCUS CONTROLS (EDIT THESE)
    ============================================================ */
 
 export const FOCUS_DISTANCE = 55;
@@ -63,7 +57,7 @@ export const DEFAULT_CAMERA_POS = new THREE.Vector3(0, 0, 72);
 export const DEFAULT_TARGET = new THREE.Vector3(0, 0, 0);
 
 /* ============================================================
-   SPIRAL GALAXY 
+   🌌 SPIRAL GALAXY (EDIT THESE)
    ============================================================ */
 
 export const GALAXY_Y = -90;
@@ -80,11 +74,15 @@ export const GALAXY_ARM_COLOR = "#A78BFA";
 export const GALAXY_DUST_COLOR = "#22D3EE";
 
 /* ============================================================
-    SCENE ITEMS 
+   🧾 SCENE ITEMS (ONE RING)
    ============================================================ */
 
 export const CLASS_SPHERES = [
-  { label: "COMP 484: Web Engineering", color: "#22D3EE" },
+  {
+    label: "COMP 484: Web Engineering",
+    color: "#22D3EE",
+    route: "COMP484",
+  },
   { label: "COMP 584: Advanced Web Engineering", color: "#A78BFA" },
   { label: "COMP 467: Multimedia System Design", color: "#F472B6" },
   { label: "COMP 582: Software Verification and Validation", color: "#34D399" },
@@ -103,4 +101,5 @@ export const CLASS_SPHERES = [
 export const ABOUT_ME = {
   label: "About Me",
   color: "#60A5FA",
+  route: "AboutMe", 
 };

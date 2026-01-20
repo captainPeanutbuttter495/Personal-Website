@@ -45,17 +45,16 @@ export default function Scene() {
     <>
       <ambientLight intensity={0.08} />
 
-      {/* Background */}
       <Starfield count={STAR_COUNT} />
       <ShootingStars />
       <SpiralGalaxy />
 
-      {/* Click empty space to reset camera */}
       <mesh onPointerDown={onClearSelection} visible={false}>
         <boxGeometry args={[4000, 4000, 4000]} />
         <meshBasicMaterial transparent opacity={0} />
       </mesh>
 
+      {/* Outer ring */}
       {CLASS_SPHERES.map((item, i) => {
         const angle = (i / CLASS_SPHERES.length) * Math.PI * 2;
 
@@ -75,6 +74,7 @@ export default function Scene() {
             labelFontSize={LABEL_FONT_SIZE}
             onSelect={onSelectSphere}
             url={item.url}
+            route={item.route}
           />
         );
       })}
@@ -89,6 +89,7 @@ export default function Scene() {
         labelHeight={CENTER_LABEL_HEIGHT}
         labelFontSize={CENTER_LABEL_FONT_SIZE}
         onSelect={onSelectSphere}
+        route={ABOUT_ME.route} // ✅ NEW (double-click goes to /AboutMe)
       />
 
       <OrbitControls
