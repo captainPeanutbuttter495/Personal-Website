@@ -1,4 +1,5 @@
 // src/App.jsx
+import { useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
@@ -13,14 +14,42 @@ import {
   BLOOM_SMOOTHING,
 } from "./config/tuning";
 
+/**
+ * GitHub Pages / base-path safe route extraction:
+ * We ONLY care about the last segment (e.g. AboutMe, COMP484).
+ * Everything else becomes "home" (galaxy landing page).
+ */
+function getRouteKey() {
+  const pathname = window.location.pathname || "/";
+  const parts = pathname.split("/").filter(Boolean); // removes empty segments
+  const last = parts.length ? parts[parts.length - 1] : "";
+
+  // Only treat known pages as routes; otherwise home
+  if (last === "AboutMe") return "AboutMe";
+  if (last === "COMP484") return "COMP484";
+  return ""; // home / landing
+}
+
 export default function App() {
-  const base = import.meta.env.BASE_URL || "/";
-  const path = window.location.pathname.replace(base, "").replace(/^\/+/, "");
+  const [routeKey, setRouteKey] = useState(() => getRouteKey());
 
-  // Simple "routing" without React Router (GitHub Pages friendly)
-  if (path === "COMP484") return <COMP484 />;
-  if (path === "AboutMe") return <AboutMe />;
+  useEffect(() => {
+    const sync = () => setRouteKey(getRouteKey());
 
+    window.addEventListener("popstate", sync);
+    window.addEventListener("app:navigate", sync);
+
+    return () => {
+      window.removeEventListener("popstate", sync);
+      window.removeEventListener("app:navigate", sync);
+    };
+  }, []);
+
+  // Pages
+  if (routeKey === "COMP484") return <COMP484 />;
+  if (routeKey === "AboutMe") return <AboutMe />;
+
+  // Home (your original galaxy landing page)
   return (
     <div
       style={{
