@@ -7,10 +7,9 @@ import { Water } from "three/examples/jsm/objects/Water.js";
 import { Sky } from "three/examples/jsm/objects/Sky.js";
 
 export default function OceanSunset({
-  // Raise elevation slightly so scattering creates a warm band
   elevation = 7,
   azimuth = 180,
-  exposure = 0.85,
+  exposure = 0.9, // slightly brighter for more glow
 }) {
   const { gl, scene, camera } = useThree();
   const sun = useMemo(() => new THREE.Vector3(), []);
@@ -28,8 +27,6 @@ export default function OceanSunset({
     if (gl.outputColorSpace !== undefined) {
       gl.outputColorSpace = THREE.SRGBColorSpace;
     }
-
-    return () => {};
   }, [gl, exposure]);
 
   // Camera baseline
@@ -41,7 +38,7 @@ export default function OceanSunset({
     camera.updateProjectionMatrix();
   }, [camera]);
 
-  // Explicit texture load (no silent failure)
+  // Explicit texture load
   useEffect(() => {
     const base = import.meta.env.BASE_URL || "/";
     const url = `${base}textures/waternormals.jpg`;
@@ -69,20 +66,15 @@ export default function OceanSunset({
     s.scale.setScalar(10000);
 
     const u = s.material.uniforms;
-
-    // These are the main levers:
-    // - turbidity: haze amount (more => warmer, thicker atmosphere)
-    // - rayleigh: blue scattering (lower => less deep blue)
-    // - mieCoefficient / mieDirectionalG: sun haze/glow and horizon band
-    u.turbidity.value = 20;
-    u.rayleigh.value = 1.1;
+    u.turbidity.value = 18;
+    u.rayleigh.value = 1.0;
     u.mieCoefficient.value = 0.012;
-    u.mieDirectionalG.value = 0.92;
+    u.mieDirectionalG.value = 0.9;
 
     return s;
   }, []);
 
-  // Water (slightly warmer reflective tone)
+  // Water
   const water = useMemo(() => {
     if (!waterNormals) return null;
 
@@ -93,8 +85,8 @@ export default function OceanSunset({
       textureHeight: 1024,
       waterNormals,
       sunDirection: new THREE.Vector3(),
-      sunColor: 0xffc88a, // warm sun
-      waterColor: 0x001e2d, // deep ocean base
+      sunColor: 0xffc88a,
+      waterColor: 0x06293d, // slightly lighter teal
       distortionScale: 3.4,
       fog: false,
     });
@@ -108,10 +100,14 @@ export default function OceanSunset({
     return w;
   }, [waterNormals]);
 
-  // Mount sky + water
+  // Mount sky + water + background/fog
   useEffect(() => {
     scene.add(sky);
     if (water) scene.add(water);
+
+    const bg = new THREE.Color("#101a33"); // lighter navy
+    scene.background = bg;
+    scene.fog = new THREE.FogExp2(bg, 0.000035); // softer than before
 
     return () => {
       scene.remove(sky);
@@ -120,13 +116,14 @@ export default function OceanSunset({
         water.geometry?.dispose?.();
         water.material?.dispose?.();
       }
-      // Reset background when leaving page
       scene.background = null;
+      scene.fog = null;
       pmremGenerator.dispose();
+      scene.environment = null;
     };
   }, [scene, sky, water, pmremGenerator]);
 
-  // Update sun + env + set background to sky
+  // Sun + env
   useEffect(() => {
     if (!water) return;
 
@@ -137,15 +134,11 @@ export default function OceanSunset({
     sky.material.uniforms.sunPosition.value.copy(sun);
     water.material.uniforms.sunDirection.value.copy(sun).normalize();
 
-    // Use sky as the actual background
-    scene.background = sky;
-
-    // Environment lighting from sky
-    const rt = pmremGenerator.fromScene(envScene.add(sky));
-    scene.environment = rt.texture;
+    envScene.add(sky);
+    const rt = pmremGenerator.fromScene(envScene);
     envScene.remove(sky);
+    scene.environment = rt.texture;
 
-    // Place sun disc
     if (sunMeshRef.current) {
       sunMeshRef.current.position.copy(sun.clone().multiplyScalar(4000));
     }
@@ -168,7 +161,7 @@ export default function OceanSunset({
         enablePan={false}
       />
 
-      {/* Warm sun disc (slightly larger so it reads like the demo) */}
+      {/* Warm sun disc */}
       <mesh ref={sunMeshRef}>
         <sphereGeometry args={[65, 24, 18]} />
         <meshBasicMaterial color={0xffc88a} toneMapped={false} />
