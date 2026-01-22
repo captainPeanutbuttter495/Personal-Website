@@ -9,7 +9,7 @@ import { Sky } from "three/examples/jsm/objects/Sky.js";
 export default function OceanSunset({
   elevation = 7,
   azimuth = 180,
-  exposure = 0.9, // slightly brighter for more glow
+  exposure = 0.9,
 }) {
   const { gl, scene, camera } = useThree();
   const sun = useMemo(() => new THREE.Vector3(), []);
@@ -19,26 +19,33 @@ export default function OceanSunset({
 
   const [waterNormals, setWaterNormals] = useState(null);
 
-  // Renderer baseline
+  // computed control limits anchored to initial camera polar
+  const [polarLimits, setPolarLimits] = useState({
+    minPolarAngle: Math.PI * 0.46,
+    maxPolarAngle: Math.PI * 0.58,
+  });
+
+  /* ---------------- Renderer baseline ---------------- */
   useEffect(() => {
     gl.toneMapping = THREE.ACESFilmicToneMapping;
     gl.toneMappingExposure = exposure;
-
     if (gl.outputColorSpace !== undefined) {
       gl.outputColorSpace = THREE.SRGBColorSpace;
     }
   }, [gl, exposure]);
 
-  // Camera baseline
+  /* ---------------- Camera baseline (wide shot) ---------------- */
   useEffect(() => {
     camera.fov = 55;
     camera.near = 1;
     camera.far = 20000;
+
+    // Starting camera (matches your "good" composition)
     camera.position.set(30, 18, 120);
     camera.updateProjectionMatrix();
   }, [camera]);
 
-  // Explicit texture load
+  /* ---------------- load water normals ---------------- */
   useEffect(() => {
     const base = import.meta.env.BASE_URL || "/";
     const url = `${base}textures/waternormals.jpg`;
@@ -60,54 +67,46 @@ export default function OceanSunset({
     );
   }, []);
 
-  // Sky tuned for sunset
+  /* ---------------- Sky ---------------- */
   const sky = useMemo(() => {
     const s = new Sky();
     s.scale.setScalar(10000);
-
     const u = s.material.uniforms;
+    // tuned for warm sunset band
     u.turbidity.value = 18;
     u.rayleigh.value = 1.0;
     u.mieCoefficient.value = 0.012;
     u.mieDirectionalG.value = 0.9;
-
     return s;
   }, []);
 
-  // Water
+  /* ---------------- Water ---------------- */
   const water = useMemo(() => {
     if (!waterNormals) return null;
-
     const geometry = new THREE.PlaneGeometry(10000, 10000);
-
     const w = new Water(geometry, {
       textureWidth: 1024,
       textureHeight: 1024,
       waterNormals,
       sunDirection: new THREE.Vector3(),
       sunColor: 0xffc88a,
-      waterColor: 0x06293d, // slightly lighter teal
+      waterColor: 0x06293d,
       distortionScale: 3.4,
       fog: false,
     });
-
     w.rotation.x = -Math.PI / 2;
-
-    if (w.material?.uniforms?.size) {
-      w.material.uniforms.size.value = 1.1;
-    }
-
+    if (w.material?.uniforms?.size) w.material.uniforms.size.value = 1.1;
     return w;
   }, [waterNormals]);
 
-  // Mount sky + water + background/fog
+  /* ---------------- mount scene ---------------- */
   useEffect(() => {
     scene.add(sky);
     if (water) scene.add(water);
 
-    const bg = new THREE.Color("#101a33"); // lighter navy
+    const bg = new THREE.Color("#101a33");
     scene.background = bg;
-    scene.fog = new THREE.FogExp2(bg, 0.000035); // softer than before
+    scene.fog = new THREE.FogExp2(bg, 0.000035);
 
     return () => {
       scene.remove(sky);
@@ -123,10 +122,9 @@ export default function OceanSunset({
     };
   }, [scene, sky, water, pmremGenerator]);
 
-  // Sun + env
+  /* ---------------- sun position + environment ---------------- */
   useEffect(() => {
     if (!water) return;
-
     const phi = THREE.MathUtils.degToRad(90 - elevation);
     const theta = THREE.MathUtils.degToRad(azimuth);
     sun.setFromSphericalCoords(1, phi, theta);
@@ -146,22 +144,69 @@ export default function OceanSunset({
     return () => rt.dispose();
   }, [water, elevation, azimuth, sun, sky, pmremGenerator, envScene, scene]);
 
+  /* ---------------- animate water ---------------- */
   useFrame(() => {
     if (!water) return;
-    water.material.uniforms.time.value += 1.0 / 60.0;
+    water.material.uniforms.time.value += 1 / 60;
   });
 
+  /* ---------------- compute initial polar & set asymmetric limits ----------------
+     Behavior:
+       - maxPolarAngle = initial polar (so user cannot look more DOWN than starting POV)
+       - minPolarAngle = initial polar - allowedUpRange (lets user look UP some amount)
+  -------------------------------------------------------------------------------*/
+  useEffect(() => {
+    // target used by OrbitControls in this file:
+    const target = new THREE.Vector3(0, 6, 0);
+
+    // vector from target -> camera
+    const v = camera.position.clone().sub(target);
+    const spherical = new THREE.Spherical();
+    spherical.setFromVector3(v);
+
+    const initialPolar = spherical.phi; // radians; 0 = +Y (top), π = -Y (down)
+
+    // how many radians we allow the user to look UP from start (tweakable)
+    const allowedUpRange = Math.PI * 0.12; // ~21.6°
+
+    // clamp sanity checks
+    const minPolar = Math.max(0.001, initialPolar - allowedUpRange);
+    const maxPolar = Math.min(Math.PI - 0.001, initialPolar);
+
+    setPolarLimits({
+      minPolarAngle: minPolar,
+      maxPolarAngle: maxPolar,
+    });
+
+    console.log(
+      "[OceanSunset] polarAnchors:",
+      "initialPolar(deg)=",
+      (initialPolar * 180) / Math.PI,
+      "min(deg)=",
+      (minPolar * 180) / Math.PI,
+      "max(deg)=",
+      (maxPolar * 180) / Math.PI,
+    );
+  }, [camera]);
+
+  /* ---------------- Render controls + sun ---------------- */
   return (
     <>
       <OrbitControls
-        maxPolarAngle={Math.PI * 0.495}
         target={[0, 6, 0]}
-        minDistance={40}
-        maxDistance={400}
         enablePan={false}
+        enableDamping
+        dampingFactor={0.06}
+        minDistance={70}
+        maxDistance={220}
+        // keep the sun roughly forward horizontally
+        minAzimuthAngle={-Math.PI / 5}
+        maxAzimuthAngle={Math.PI / 5}
+        // asymmetric vertical clamp computed above
+        minPolarAngle={polarLimits.minPolarAngle}
+        maxPolarAngle={polarLimits.maxPolarAngle}
       />
 
-      {/* Warm sun disc */}
       <mesh ref={sunMeshRef}>
         <sphereGeometry args={[65, 24, 18]} />
         <meshBasicMaterial color={0xffc88a} toneMapped={false} />
