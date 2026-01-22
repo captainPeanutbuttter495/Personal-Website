@@ -39,14 +39,14 @@ export default function ParticleSphere({
   labelHeight,
   labelFontSize,
   onSelect,
-  url, // ✅ optional (Pokemon uses this)
+  url,
+  route,
 }) {
   const ref = useRef();
   const matRef = useRef();
   const tex = useMemo(() => createStarTexture(), []);
 
   const baseColor = useMemo(() => {
-    // Important: ensure valid hex strings like "#22D3EE"
     return new THREE.Color(color).multiplyScalar(PARTICLE_BRIGHTNESS);
   }, [color]);
 
@@ -57,7 +57,6 @@ export default function ParticleSphere({
     const ph = new Float32Array(particleCount);
 
     for (let i = 0; i < particleCount; i++) {
-      // fibonacci sphere distribution
       const y = 1 - (i / (particleCount - 1)) * 2;
       const r = Math.sqrt(1 - y * y);
       const t = i * 2.39996323;
@@ -154,11 +153,17 @@ export default function ParticleSphere({
         }}
         onDoubleClick={(e) => {
           e.stopPropagation();
-          if (url) window.open(url, "_blank", "noopener,noreferrer");
+
+          if (url) {
+            window.open(url, "_blank", "noopener,noreferrer");
+          } else if (route) {
+            const base = import.meta.env.BASE_URL || "/";
+            window.location.href = `${base}${route}`;
+          }
         }}
         onPointerOver={(e) => {
           e.stopPropagation();
-          document.body.style.cursor = url ? "pointer" : "pointer";
+          document.body.style.cursor = "pointer";
         }}
         onPointerOut={() => {
           document.body.style.cursor = "default";
