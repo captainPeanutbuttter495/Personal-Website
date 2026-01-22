@@ -1,1 +1,1 @@
-export { default as OceanSunset } from "./OceanSunset"
+export { default as OceanSunset, OceanModal } from "./OceanSunset"

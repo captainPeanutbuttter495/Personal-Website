@@ -1,7 +1,7 @@
 // src/Pages/AboutMe.jsx
 import { Canvas } from "@react-three/fiber";
 import * as THREE from "three";
-import { OceanSunset } from "../environments/ocean";
+import { OceanSunset, OceanModal } from "../environments/ocean";
 
 export default function AboutMe() {
   return (
@@ -16,7 +16,7 @@ export default function AboutMe() {
       {/* 3D ocean */}
       <Canvas
         style={{ width: "100%", height: "100%", display: "block" }}
-        camera={{ fov: 55, near: 1, far: 20000, position: [30, 18, 120] }}
+        camera={{ fov: 55, near: 1, far: 20000, position: [0, 45, 215] }}
         gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}
         dpr={[1, 2]}
       >
@@ -57,6 +57,9 @@ export default function AboutMe() {
       >
         Back
       </button>
+
+      {/* Modal for sphere info panels (rendered outside Canvas) */}
+      <OceanModal />
     </div>
   );
 }
