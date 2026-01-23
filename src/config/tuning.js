@@ -83,14 +83,31 @@ export const CLASS_SPHERES = [
     color: "#22D3EE",
     route: "COMP484",
   },
-  { label: "COMP 584: Advanced Web Engineering", color: "#A78BFA" },
-  { label: "COMP 467: Multimedia System Design", color: "#F472B6" },
-  { label: "COMP 582: Software Verification and Validation", color: "#34D399" },
   {
-    label: "COMP 587: Software Requirements and Verification",
-    color: "#FB7185",
+    label: "COMP 584: Advanced Web Engineering",
+    color: "#A78BFA",
+    route: "COMP584",
   },
-  { label: "Senior Design Project", color: "#FBBF24" },
+  {
+    label: "COMP 467: Multimedia System Design",
+    color: "#F472B6",
+    route: "COMP467",
+  },
+  {
+    label: "COMP 582: Software Requirements Analysis",
+    color: "#34D399",
+    route: "COMP582",
+  },
+  {
+    label: "COMP 587: Software Verification and Validation",
+    color: "#FB7185",
+    route: "COMP587",
+  },
+  {
+    label: "Senior Design Project",
+    color: "#FBBF24",
+    route: "SeniorDesign",
+  },
   {
     label: "Pokemon TCG Shop",
     color: "#F97316",

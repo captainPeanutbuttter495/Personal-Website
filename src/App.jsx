@@ -6,6 +6,11 @@ import * as THREE from "three";
 
 import Scene from "./scene/Scene";
 import COMP484 from "./Pages/COMP484";
+import COMP584 from "./Pages/COMP584";
+import COMP467 from "./Pages/COMP467";
+import COMP582 from "./Pages/COMP582";
+import COMP587 from "./Pages/COMP587";
+import SeniorDesign from "./Pages/SeniorDesign";
 import AboutMe from "./Pages/AboutMe";
 
 import {
@@ -27,6 +32,11 @@ function getRouteKey() {
   // Only treat known pages as routes; otherwise home
   if (last === "AboutMe") return "AboutMe";
   if (last === "COMP484") return "COMP484";
+  if (last === "COMP584") return "COMP584";
+  if (last === "COMP467") return "COMP467";
+  if (last === "COMP582") return "COMP582";
+  if (last === "COMP587") return "COMP587";
+  if (last === "SeniorDesign") return "SeniorDesign";
   return ""; // home / landing
 }
 
@@ -47,6 +57,11 @@ export default function App() {
 
   // Pages
   if (routeKey === "COMP484") return <COMP484 />;
+  if (routeKey === "COMP584") return <COMP584 />;
+  if (routeKey === "COMP467") return <COMP467 />;
+  if (routeKey === "COMP582") return <COMP582 />;
+  if (routeKey === "COMP587") return <COMP587 />;
+  if (routeKey === "SeniorDesign") return <SeniorDesign />;
   if (routeKey === "AboutMe") return <AboutMe />;
 
   // Home (your original galaxy landing page)

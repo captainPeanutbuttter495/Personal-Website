@@ -779,10 +779,9 @@ export default function OceanSunset({
       <OrbitControls
         target={[0, 6, 0]}
         enablePan={false}
+        enableZoom={false}
         enableDamping
         dampingFactor={0.06}
-        minDistance={70}
-        maxDistance={220}
         minAzimuthAngle={-Math.PI / 5}
         maxAzimuthAngle={Math.PI / 5}
         minPolarAngle={polarLimits.minPolarAngle}
