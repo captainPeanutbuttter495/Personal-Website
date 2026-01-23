@@ -26,3 +26,6 @@ Thumbs.db
 # Optional: cache (safe to ignore)
 .eslintcache
 *.log
+
+# resume
+Garcia_Matthew_Resume.pdf

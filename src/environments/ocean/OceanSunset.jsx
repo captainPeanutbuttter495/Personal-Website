@@ -144,14 +144,14 @@ export function OceanModal() {
 
   if (!activePanel) return null;
 
+  const baseUrl = import.meta.env.BASE_URL || "/";
+  const resumePath = `${baseUrl}Garcia_Matthew_Resume.pdf`;
+
   const panels = {
     resume: {
       title: "Resume",
       content: (
         <>
-          <p style={{ color: "#b8c5d6", marginBottom: "16px" }}>
-            Computer Science student at CSUN graduating December 2026.
-          </p>
           <div style={{ marginBottom: "20px" }}>
             <h3 style={{ color: "#ffc88a", marginBottom: "12px" }}>Education</h3>
             <p style={{ color: "#d0d8e0", marginBottom: "8px" }}>
@@ -161,35 +161,80 @@ export function OceanModal() {
               Bachelor of Science in Computer Science | Graduation: December 2026
             </p>
             <p style={{ color: "#d0d8e0", fontSize: "14px" }}>
-              Relevant courses: OOP in Java/C++, DSA, OS, Software Engineering, Web Engineering,
-              Software Requirements Analysis, Verification/Validation, Multimedia System Design
+              Relevant courses: OOP in Java/C++, Intro/Advanced DSA, OS, Intro to SWE, Web Engineering,
+              Software Requirements Analysis, Verification/Validation, Advanced Web Eng, Multimedia System Design, Senior Design Project
             </p>
           </div>
           <div style={{ marginBottom: "20px" }}>
             <h3 style={{ color: "#ffc88a", marginBottom: "12px" }}>Projects</h3>
             <div style={{ marginBottom: "16px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <p style={{ color: "#d0d8e0", fontWeight: "500" }}>PokeShop</p>
+                <a href="https://chrillspoketcg.click/" target="_blank" rel="noopener noreferrer" style={{ color: "#4a9eff", fontSize: "13px" }}>chrillspoketcg.click</a>
+              </div>
+              <p style={{ color: "#888", fontSize: "13px" }}>React, Node.js, Express, PostgreSQL, AWS, Auth0</p>
+              <p style={{ color: "#d0d8e0", fontSize: "14px" }}>
+                Full-stack Pokemon card marketplace on AWS with S3, CloudFront, Lambda, RDS PostgreSQL, and Auth0 authentication with RBAC.
+              </p>
+            </div>
+            <div style={{ marginBottom: "16px" }}>
               <p style={{ color: "#d0d8e0", fontWeight: "500" }}>Minimalist C Compiler</p>
               <p style={{ color: "#888", fontSize: "13px" }}>Python, x86 Assembly</p>
               <p style={{ color: "#d0d8e0", fontSize: "14px" }}>
-                Built a compiler from scratch translating C subset into x86 assembly with regex-based lexer and recursive descent parser.
+                Built a compiler from scratch translating C subset into x86 assembly with regex-based lexer and recursive descent parser covering 100% of test grammar cases.
               </p>
             </div>
             <div style={{ marginBottom: "16px" }}>
               <p style={{ color: "#d0d8e0", fontWeight: "500" }}>Full Stack Authentication App</p>
               <p style={{ color: "#888", fontSize: "13px" }}>AWS, Next.js, Node.js, Express, Tailwind</p>
               <p style={{ color: "#d0d8e0", fontSize: "14px" }}>
-                Built full-stack auth system with secure REST APIs, bcrypt hashing, and responsive React UI.
+                Built full-stack auth system with secure REST APIs, bcrypt hashing with salting, and responsive React UI.
               </p>
             </div>
             <div>
               <p style={{ color: "#d0d8e0", fontWeight: "500" }}>Marks Automation Script</p>
               <p style={{ color: "#888", fontSize: "13px" }}>Python, MongoDB</p>
               <p style={{ color: "#d0d8e0", fontSize: "14px" }}>
-                Automated VFX pipeline tasks, reducing processing time from 30+ minutes to under 60 seconds.
+                Automated 4 VFX pipeline tasks, reducing processing time from 30+ minutes to under 60 seconds.
               </p>
             </div>
           </div>
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+            <a
+              href={resumePath}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                background: "linear-gradient(90deg, #4a9eff, #6bb3ff)",
+                border: "none",
+                padding: "12px 24px",
+                borderRadius: "8px",
+                color: "#fff",
+                fontWeight: "600",
+                cursor: "pointer",
+                fontSize: "14px",
+                textDecoration: "none",
+              }}
+            >
+              Preview
+            </a>
+            <a
+              href={resumePath}
+              download="Matthew_Garcia_Resume.pdf"
+              style={{
+                background: "linear-gradient(90deg, #34d399, #4ade80)",
+                border: "none",
+                padding: "12px 24px",
+                borderRadius: "8px",
+                color: "#fff",
+                fontWeight: "600",
+                cursor: "pointer",
+                fontSize: "14px",
+                textDecoration: "none",
+              }}
+            >
+              Download
+            </a>
             <a
               href="https://www.linkedin.com/in/matthew-garcia-b0301b217/"
               target="_blank"
@@ -236,52 +281,39 @@ export function OceanModal() {
         <>
           <div style={{ marginBottom: "24px" }}>
             <h3 style={{ color: "#ff6b6b", marginBottom: "8px" }}>
+              Student Assistant - Library @ CSUN
+            </h3>
+            <p style={{ color: "#888", fontSize: "14px", marginBottom: "8px" }}>
+              Jan 2023 - Present | Northridge, CA
+            </p>
+            <ul style={{ color: "#d0d8e0", paddingLeft: "20px", margin: 0 }}>
+              <li style={{ marginBottom: "6px" }}>Assisted an average of 5 patrons per day with research tools, catalog navigation, and library technology services</li>
+              <li>Guided students and faculty in locating academic sources and using scholarly databases for coursework and research</li>
+            </ul>
+          </div>
+          <div style={{ marginBottom: "24px" }}>
+            <h3 style={{ color: "#ff6b6b", marginBottom: "8px" }}>
               Research Associate - Full Stack Developer @ CSUN
             </h3>
             <p style={{ color: "#888", fontSize: "14px", marginBottom: "8px" }}>
               Sep 2023 - May 2025 | React, Firebase, Vitest
             </p>
             <ul style={{ color: "#d0d8e0", paddingLeft: "20px", margin: 0 }}>
-              <li style={{ marginBottom: "6px" }}>Collaborated with stakeholders to define requirements and produced interactive Figma prototypes for a Coaching Dashboard</li>
-              <li style={{ marginBottom: "6px" }}>Integrated Firebase with React to visualize sprint performance data using Chart.js</li>
-              <li style={{ marginBottom: "6px" }}>Implemented role-based access control using react-permissions</li>
-              <li>Developed and maintained component tests with Vitest</li>
-            </ul>
-          </div>
-          <div style={{ marginBottom: "24px" }}>
-            <h3 style={{ color: "#ff6b6b", marginBottom: "8px" }}>
-              Student Assistant - Library @ CSUN
-            </h3>
-            <p style={{ color: "#888", fontSize: "14px", marginBottom: "8px" }}>
-              Jan 2023 - Present
-            </p>
-            <ul style={{ color: "#d0d8e0", paddingLeft: "20px", margin: 0 }}>
-              <li style={{ marginBottom: "6px" }}>Assisted an average of 5 patrons per day with research tools and library technology</li>
-              <li>Guided students and faculty in locating academic sources and using scholarly databases</li>
-            </ul>
-          </div>
-          <div style={{ marginBottom: "24px" }}>
-            <h3 style={{ color: "#ff6b6b", marginBottom: "8px" }}>
-              Student Mentor @ CSUN
-            </h3>
-            <p style={{ color: "#888", fontSize: "14px", marginBottom: "8px" }}>
-              May 2023 - Aug 2024
-            </p>
-            <ul style={{ color: "#d0d8e0", paddingLeft: "20px", margin: 0 }}>
-              <li style={{ marginBottom: "6px" }}>Mentored first-year students in goal setting, study planning, and time management</li>
-              <li>Partnered with staff and faculty to connect students with campus resources</li>
+              <li style={{ marginBottom: "6px" }}>Collaborated with stakeholders to define requirements and produced interactive Figma prototypes for a Coaching Dashboard used by university soccer staff and athletes</li>
+              <li style={{ marginBottom: "6px" }}>Integrated Firebase with React to fetch and visualize sprint performance data using Chart.js; enabled real-time health metric monitoring</li>
+              <li>Implemented role-based access control using react-permissions, ensuring data privacy and permission enforcement across user types</li>
             </ul>
           </div>
           <div>
             <h3 style={{ color: "#ff6b6b", marginBottom: "8px" }}>
-              Academic Tutor @ LA Pierce College
+              Student Mentor - Student Development and Transitional Program @ CSUN
             </h3>
             <p style={{ color: "#888", fontSize: "14px", marginBottom: "8px" }}>
-              Jan 2022 - Aug 2022
+              May 2023 - Aug 2024 | Northridge, CA
             </p>
             <ul style={{ color: "#d0d8e0", paddingLeft: "20px", margin: 0 }}>
-              <li style={{ marginBottom: "6px" }}>Provided one-on-one tutoring in computer science and math</li>
-              <li>Led collaborative study sessions for 3-5 students</li>
+              <li style={{ marginBottom: "6px" }}>Mentored first-year students in goal setting, study planning, and time management to promote academic success</li>
+              <li>Partnered with staff and faculty to connect students with campus resources, contributing to improved engagement and retention</li>
             </ul>
           </div>
         </>
@@ -292,9 +324,10 @@ export function OceanModal() {
       content: (
         <>
           <p style={{ color: "#d0d8e0", marginBottom: "16px" }}>
-            Hi! I'm Matthew Garcia, a Computer Science student at California State University Northridge.
-            I'm passionate about building full-stack applications and have experience in everything from
-            low-level compiler development to modern web applications with React and Node.js.
+            Hi! I'm Matthew Garcia, a Computer Science student at California State University Northridge
+            graduating December 2026. I'm passionate about building full-stack applications and have
+            experience in everything from low-level compiler development to modern cloud-deployed web
+            applications with React, Node.js, and AWS.
           </p>
           <p style={{ color: "#d0d8e0", marginBottom: "20px" }}>
             Feel free to reach out at <a href="mailto:garciamatthew2024@gmail.com" style={{ color: "#4a9eff" }}>garciamatthew2024@gmail.com</a> or
@@ -303,7 +336,7 @@ export function OceanModal() {
           <div style={{ marginBottom: "20px" }}>
             <h3 style={{ color: "#6bcb77", marginBottom: "12px" }}>Languages</h3>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {["JavaScript", "HTML/CSS", "Python", "Java", "C/C++"].map((skill) => (
+              {["JavaScript", "Python", "Java", "C/C++", "SQL", "HTML/CSS"].map((skill) => (
                 <span
                   key={skill}
                   style={{
@@ -323,7 +356,7 @@ export function OceanModal() {
           <div style={{ marginBottom: "20px" }}>
             <h3 style={{ color: "#4a9eff", marginBottom: "12px" }}>Frameworks</h3>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {["React", "React Native", "Node.js", "Next.js", "Express", "Vitest", "Tailwind", "Bootstrap"].map((skill) => (
+              {["React", "Node.js", "Express", "TailwindCSS", "Prisma ORM", "Vitest"].map((skill) => (
                 <span
                   key={skill}
                   style={{
@@ -340,10 +373,30 @@ export function OceanModal() {
               ))}
             </div>
           </div>
-          <div>
-            <h3 style={{ color: "#ffd93d", marginBottom: "12px" }}>Developer Tools</h3>
+          <div style={{ marginBottom: "20px" }}>
+            <h3 style={{ color: "#f97316", marginBottom: "12px" }}>Cloud & DevOps</h3>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {["Git", "VS Code", "Vim", "AWS", "MongoDB", "Firebase", "Jira", "Figma"].map((skill) => (
+              {["AWS Lambda", "S3", "CloudFront", "RDS", "Route 53", "API Gateway", "Serverless Framework", "Firebase"].map((skill) => (
+                <span
+                  key={skill}
+                  style={{
+                    background: "rgba(249, 115, 22, 0.2)",
+                    padding: "6px 14px",
+                    borderRadius: "20px",
+                    fontSize: "14px",
+                    color: "#f97316",
+                    border: "1px solid rgba(249, 115, 22, 0.3)",
+                  }}
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h3 style={{ color: "#ffd93d", marginBottom: "12px" }}>Tools</h3>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              {["Git", "PostgreSQL", "MongoDB", "Auth0/JWT", "REST APIs", "Figma", "VS Code", "Jira"].map((skill) => (
                 <span
                   key={skill}
                   style={{
@@ -464,6 +517,7 @@ export function OceanModal() {
             {panel.title}
           </h2>
           <button
+            type="button"
             style={{
               background: "rgba(255, 255, 255, 0.1)",
               border: "none",
@@ -477,7 +531,10 @@ export function OceanModal() {
               alignItems: "center",
               justifyContent: "center",
             }}
-            onClick={closeModal}
+            onClick={(e) => {
+              e.stopPropagation();
+              closeModal();
+            }}
             onMouseOver={(e) => (e.currentTarget.style.background = "rgba(255, 100, 100, 0.3)")}
             onMouseOut={(e) => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)")}
           >
