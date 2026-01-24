@@ -8,7 +8,11 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:api.github.com)",
-      "WebFetch(domain:redstapler.co)"
+      "WebFetch(domain:redstapler.co)",
+      "Bash(node --version:*)",
+      "Bash(npm --version)",
+      "Bash(npx vite build)",
+      "Bash(node -e:*)"
     ]
   }
 }

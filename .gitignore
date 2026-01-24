@@ -30,4 +30,8 @@ Thumbs.db
 # resume
 Garcia_Matthew_Resume.pdf
 
+.gitignore
+
+#claude
 .claude
+settings.local.json
