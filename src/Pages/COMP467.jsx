@@ -7,6 +7,8 @@ import {
   openCherryModal,
 } from "../environments/cherry-blossom";
 import CourseNavbar from "../components/CourseNavbar";
+import FaceSphere from "../components/FaceSphere";
+import MonjoriBackground from "../components/MonjoriBackground";
 import {
   COMP467_CONTENT,
   COMP467_THEME,
@@ -41,8 +43,16 @@ export default function COMP467() {
         gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}
         dpr={[1, 2]}
       >
-        {/* Add your Three.js components here */}
+        <MonjoriBackground />
         <ambientLight intensity={0.5} />
+        <pointLight color="#ffffff" intensity={1.2} position={[5, 3, 8]} />
+        <pointLight color="#F472B6" intensity={0.4} position={[-5, 0, 5]} />
+        <FaceSphere
+          position={[0, 0, 0]}
+          radius={8}
+          rotationSpeed={1.75}
+          scale={[1, 1, 1]}
+        />
       </Canvas>
 
       {/* Course Navbar */}

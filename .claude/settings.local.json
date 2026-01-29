@@ -12,7 +12,9 @@
       "Bash(node --version:*)",
       "Bash(npm --version)",
       "Bash(npx vite build)",
-      "Bash(node -e:*)"
+      "Bash(node -e:*)",
+      "Bash(ls -la \"C:\\\\Users\\\\mbg91918\\\\space-portfolio\\\\src\\\\environments\"\" 2>/dev/null || echo \"Directory not found \")",
+      "Bash(dir:*)"
     ]
   }
 }
