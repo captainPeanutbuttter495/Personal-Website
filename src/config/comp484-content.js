@@ -28,9 +28,11 @@ export const COMP484_CONTENT = {
       },
       {
         id: 2,
-        title: "Assignment 2",
-        description: "Coming soon...",
-        status: "pending",
+        title: "Lab 2: JavaScript Form Validation",
+        description:
+          "Built a registration form with client-side validation using vanilla JavaScript (no regex allowed). Implemented validation for username (lowercase only), password (mix of uppercase, lowercase, and numbers), 9-digit student ID, semester/year fields (must not be in the future), and a 25-word-limited textarea with a live countdown. Used the Event Listener model with no inline event handlers. Invalid submissions change the page background and display detailed error messages; valid submissions show a success message without actually submitting the form.",
+        status: "completed",
+        link: "https://github.com/nirvanafan205/Form_Validation",
       },
     ],
   },

@@ -5,6 +5,14 @@ export const COMP467_CONTENT = {
     title: "COMP 467: Multimedia System Design",
     overview:
       "Study of fundamentals of multimedia storage, processing, communication, presentation and display by digital means with emphasis on audio, still images and video media. Includes sampling theory, compression techniques and synchronization. Discussion of hypermedia and methodology issues. Multimedia programming; software tools for authoring multimedia applications and interfaces.",
+    objectives: [
+      "Understand fundamentals of multimedia storage, processing, and communication",
+      "Apply sampling theory and compression techniques to digital media",
+      "Work with audio, still image, and video media formats",
+      "Implement synchronization across multimedia streams",
+      "Explore hypermedia concepts and methodology issues",
+      "Develop multimedia applications using software authoring tools",
+    ],
   },
   assignments: {
     title: "Assignments",
