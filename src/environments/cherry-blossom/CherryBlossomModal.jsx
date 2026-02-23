@@ -233,9 +233,29 @@ function AssignmentsContent({ data, theme }) {
               {assignment.status}
             </span>
           </div>
-          <p style={{ color: "#d0d8e0", margin: 0, fontSize: "14px" }}>
+          <p style={{ color: "#d0d8e0", margin: 0, fontSize: "14px", whiteSpace: "pre-line" }}>
             {assignment.description}
           </p>
+          {assignment.link && (
+            <a
+              href={assignment.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "inline-block",
+                marginTop: "12px",
+                padding: "8px 16px",
+                borderRadius: "8px",
+                background: `linear-gradient(135deg, ${theme.primaryColor}, ${theme.accentColor})`,
+                color: "#1A1820",
+                fontWeight: "600",
+                fontSize: "13px",
+                textDecoration: "none",
+              }}
+            >
+              View Project
+            </a>
+          )}
         </div>
       ))}
     </div>

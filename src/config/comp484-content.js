@@ -20,9 +20,11 @@ export const COMP484_CONTENT = {
     items: [
       {
         id: 1,
-        title: "Assignment 1",
-        description: "Coming soon...",
-        status: "pending",
+        title: "Lab 1: The $8 Webpage",
+        description:
+          "Built a 1990s-era website from scratch using only HTML and CSS (no frameworks, no JavaScript). Created an 8-cell image table navigation (lab1.html) where each image links to a different site. Built a styled secondary page (lab1A.html) with an external CSS stylesheet featuring a name/image header div with red borders, a 4-cell table layout containing a hierarchical hobbies list, a form submitting to a PHP endpoint, a CSS-only hover dropdown menu for network layers, and a Google search form using GET method.",
+        status: "completed",
+        link: "https://nirvanafan205.github.io/WebEng/",
       },
       {
         id: 2,

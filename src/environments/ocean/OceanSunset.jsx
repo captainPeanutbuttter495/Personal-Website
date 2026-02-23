@@ -185,8 +185,11 @@ export function OceanModal() {
               </p>
             </div>
             <div style={{ marginBottom: "16px" }}>
-              <p style={{ color: "#d0d8e0", fontWeight: "500" }}>Full Stack Authentication App</p>
-              <p style={{ color: "#888", fontSize: "13px" }}>AWS, Next.js, Node.js, Express, Tailwind</p>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <p style={{ color: "#d0d8e0", fontWeight: "500" }}>Full Stack Authentication App</p>
+                <a href="https://comp484.click/" target="_blank" rel="noopener noreferrer" style={{ color: "#4a9eff", fontSize: "13px" }}>comp484.click</a>
+              </div>
+              <p style={{ color: "#888", fontSize: "13px" }}>React, Vite, Tailwind CSS, Node.js, Express, AWS, DynamoDB, Docker</p>
               <p style={{ color: "#d0d8e0", fontSize: "14px" }}>
                 Built full-stack auth system with secure REST APIs, bcrypt hashing with salting, and responsive React UI.
               </p>
@@ -356,7 +359,7 @@ export function OceanModal() {
           <div style={{ marginBottom: "20px" }}>
             <h3 style={{ color: "#4a9eff", marginBottom: "12px" }}>Frameworks</h3>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {["React", "Node.js", "Express", "TailwindCSS", "Prisma ORM", "Vitest"].map((skill) => (
+              {["React", "Node.js", "Express", "Tailwind CSS", "Vite"].map((skill) => (
                 <span
                   key={skill}
                   style={{
@@ -376,7 +379,7 @@ export function OceanModal() {
           <div style={{ marginBottom: "20px" }}>
             <h3 style={{ color: "#f97316", marginBottom: "12px" }}>Cloud & DevOps</h3>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {["AWS Lambda", "S3", "CloudFront", "RDS", "Route 53", "API Gateway", "Serverless Framework", "Firebase"].map((skill) => (
+              {["AWS Lambda", "S3", "CloudFront", "DynamoDB", "Route 53", "API Gateway", "AWS SAM", "Docker", "Firebase"].map((skill) => (
                 <span
                   key={skill}
                   style={{
@@ -396,7 +399,7 @@ export function OceanModal() {
           <div>
             <h3 style={{ color: "#ffd93d", marginBottom: "12px" }}>Tools</h3>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {["Git", "PostgreSQL", "MongoDB", "Auth0/JWT", "REST APIs", "Figma", "VS Code", "Jira"].map((skill) => (
+              {["Git", "PostgreSQL", "MongoDB", "JWT", "REST APIs", "Figma", "VS Code", "Jira"].map((skill) => (
                 <span
                   key={skill}
                   style={{
