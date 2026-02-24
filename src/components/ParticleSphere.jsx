@@ -1,7 +1,7 @@
 // src/components/ParticleSphere.jsx
 import { Billboard, Text } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 
 import {
@@ -44,6 +44,7 @@ export default function ParticleSphere({
 }) {
   const ref = useRef();
   const matRef = useRef();
+  const [hovered, setHovered] = useState(false);
   const tex = useMemo(() => createStarTexture(), []);
 
   const baseColor = useMemo(() => {
@@ -143,6 +144,21 @@ export default function ParticleSphere({
         </Text>
       </Billboard>
 
+      {hovered && (
+        <Billboard follow position={[0, labelHeight + labelFontSize + 1.5, 0]}>
+          <Text
+            fontSize={labelFontSize * 0.7}
+            color="#ffcc00"
+            anchorX="center"
+            anchorY="middle"
+            outlineWidth={0.02}
+            outlineColor="black"
+          >
+            double-click to open
+          </Text>
+        </Billboard>
+      )}
+
       <points
         ref={ref}
         geometry={geometry}
@@ -163,9 +179,11 @@ export default function ParticleSphere({
         }}
         onPointerOver={(e) => {
           e.stopPropagation();
+          setHovered(true);
           document.body.style.cursor = "pointer";
         }}
         onPointerOut={() => {
+          setHovered(false);
           document.body.style.cursor = "default";
         }}
       />

@@ -93,21 +93,22 @@ export const CLASS_SPHERES = [
     color: "#F472B6",
     route: "COMP467",
   },
-  {
-    label: "COMP 582: Software Requirements Analysis",
-    color: "#34D399",
-    route: "COMP582",
-  },
-  {
-    label: "COMP 587: Software Verification and Validation",
-    color: "#FB7185",
-    route: "COMP587",
-  },
-  {
-    label: "Senior Design Project",
-    color: "#FBBF24",
-    route: "SeniorDesign",
-  },
+  // TODO: Re-enable these spheres once content is added
+  // {
+  //   label: "COMP 582: Software Requirements Analysis",
+  //   color: "#34D399",
+  //   route: "COMP582",
+  // },
+  // {
+  //   label: "COMP 587: Software Verification and Validation",
+  //   color: "#FB7185",
+  //   route: "COMP587",
+  // },
+  // {
+  //   label: "Senior Design Project",
+  //   color: "#FBBF24",
+  //   route: "SeniorDesign",
+  // },
   {
     label: "Pokemon TCG Shop",
     color: "#F97316",
