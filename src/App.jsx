@@ -18,6 +18,7 @@ import {
   BLOOM_THRESHOLD,
   BLOOM_SMOOTHING,
 } from "./config/tuning";
+import { usePageTracking } from "./hooks/usePageTracking";
 
 /**
  * GitHub Pages / base-path safe route extraction:
@@ -42,6 +43,7 @@ function getRouteKey() {
 
 export default function App() {
   const [routeKey, setRouteKey] = useState(() => getRouteKey());
+  usePageTracking();
 
   useEffect(() => {
     const sync = () => setRouteKey(getRouteKey());
