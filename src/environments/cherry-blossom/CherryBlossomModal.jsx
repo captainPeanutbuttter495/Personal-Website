@@ -262,6 +262,35 @@ function AssignmentsContent({ data, theme }) {
   );
 }
 
+function ProjectSection({ heading, body, theme }) {
+  return (
+    <div style={{ marginBottom: "12px" }}>
+      <h5
+        style={{
+          margin: "0 0 4px 0",
+          color: theme.primaryColor,
+          fontSize: "13px",
+          fontWeight: "600",
+          textTransform: "uppercase",
+          letterSpacing: "0.5px",
+        }}
+      >
+        {heading}
+      </h5>
+      <p
+        style={{
+          color: "#d0d8e0",
+          margin: 0,
+          fontSize: "14px",
+          whiteSpace: "pre-line",
+        }}
+      >
+        {body}
+      </p>
+    </div>
+  );
+}
+
 function ProjectsContent({ data, theme }) {
   const items = data.items || [];
 
@@ -283,9 +312,23 @@ function ProjectsContent({ data, theme }) {
           <h4 style={{ margin: "0 0 8px 0", color: theme.accentColor }}>
             {project.title}
           </h4>
-          <p style={{ color: "#d0d8e0", marginBottom: "12px", fontSize: "14px" }}>
-            {project.description}
-          </p>
+          {project.introduction || project.motivation || project.design ? (
+            <div style={{ marginBottom: "12px" }}>
+              {project.introduction && (
+                <ProjectSection heading="Introduction" body={project.introduction} theme={theme} />
+              )}
+              {project.motivation && (
+                <ProjectSection heading="Motivation" body={project.motivation} theme={theme} />
+              )}
+              {project.design && (
+                <ProjectSection heading="Design" body={project.design} theme={theme} />
+              )}
+            </div>
+          ) : (
+            <p style={{ color: "#d0d8e0", marginBottom: "12px", fontSize: "14px" }}>
+              {project.description}
+            </p>
+          )}
           {project.technologies && project.technologies.length > 0 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: project.link ? "16px" : "0" }}>
               {project.technologies.map((tech, idx) => (
